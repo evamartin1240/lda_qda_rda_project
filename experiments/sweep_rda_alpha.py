@@ -4,31 +4,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
+import pandas as pd
 
 # Add project root to the path to import modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from data.generate_synthetic_data import generate_complex_dataset
 from models.rda import RDA
 
-# 1. Define noise level
-NOISE_LEVEL = 0.3  # Set 0.0 for no noise, or e.g., 0.3 for moderate noise
-
-# 2. Generate the dataset
-X, y = generate_complex_dataset(n_samples_per_class=50, random_state=42, noise=NOISE_LEVEL)
-
-# 3. Define alpha values to sweep
-alpha_values = np.linspace(0.0, 1.0, 6)  # Six values: 0.0, 0.2, 0.4, 0.6, 0.8, 1.0
-
-# 4. Train RDA models for each alpha
-models = []
-
-for alpha in alpha_values:
-    model = RDA(alpha=alpha)
-    model.fit(X, y)
-    models.append((model, alpha))
-
-# 5. Plot decision boundaries
 def plot_decision_boundary(model, X, y, title):
     """
     Plot the decision boundary of a classification model.
@@ -47,13 +29,44 @@ def plot_decision_boundary(model, X, y, title):
     plt.xlabel('X1')
     plt.ylabel('X2')
 
-# Create subplots
-fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+def main():
+    if len(sys.argv) != 2:
+        print(f"Usage: python {sys.argv[0]} path/to/dataset.csv")
+        sys.exit(1)
 
-for ax, (model, alpha) in zip(axes.flatten(), models):
-    plt.sca(ax)
-    plot_decision_boundary(model, X, y, f"RDA (alpha={alpha:.1f}, noise={NOISE_LEVEL})")
+    dataset_path = sys.argv[1]
 
-plt.tight_layout()
-plt.show()
+    if not os.path.exists(dataset_path):
+        print(f"Error: File '{dataset_path}' does not exist.")
+        sys.exit(1)
 
+    # Load dataset
+    df = pd.read_csv(dataset_path)
+    if not all(col in df.columns for col in ["feature1", "feature2", "label"]):
+        print("Error: CSV must contain 'feature1', 'feature2', and 'label' columns.")
+        sys.exit(1)
+
+    X = df[["feature1", "feature2"]].values
+    y = df["label"].values
+
+    # Define alpha values to sweep
+    alpha_values = np.linspace(0.0, 1.0, 6)  # 0.0, 0.2, 0.4, 0.6, 0.8, 1.0
+
+    models = []
+    for alpha in alpha_values:
+        model = RDA(alpha=alpha)
+        model.fit(X, y)
+        models.append((model, alpha))
+
+    # Plot decision boundaries
+    fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+
+    for ax, (model, alpha) in zip(axes.flatten(), models):
+        plt.sca(ax)
+        plot_decision_boundary(model, X, y, f"RDA (alpha={alpha:.1f})")
+
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    main()

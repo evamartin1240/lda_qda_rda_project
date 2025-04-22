@@ -4,42 +4,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
+import pandas as pd
 
 # Add project root to the path to import modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from models.qda import QDA
 
-# 1. Create a synthetic dataset with different covariances
-np.random.seed(42)
-n_samples = 50
-
-# Class 0: centered at (0, 0), elongated along x-axis
-X0 = np.random.multivariate_normal(
-    mean=[0, 0],
-    cov=[[3, 0], [0, 1]],
-    size=n_samples
-)
-y0 = np.zeros(n_samples)
-
-# Class 1: centered at (4, 4), elongated along y-axis
-X1 = np.random.multivariate_normal(
-    mean=[4, 4],
-    cov=[[1, 0], [0, 3]],
-    size=n_samples
-)
-y1 = np.ones(n_samples)
-
-# Combine the two classes
-X = np.vstack((X0, X1))
-y = np.hstack((y0, y1))
-
-# 2. Train the QDA model
-qda = QDA()
-qda.fit(X, y)
-y_pred = qda.predict(X)
-
-# 3. Plot the decision boundary
 def plot_decision_boundary(model, X, y, title):
     """
     Plot the decision boundary of a classification model.
@@ -59,5 +30,32 @@ def plot_decision_boundary(model, X, y, title):
     plt.ylabel('X2')
     plt.show()
 
-plot_decision_boundary(qda, X, y, "QDA Decision Boundary")
+def main():
+    if len(sys.argv) != 2:
+        print(f"Usage: python {sys.argv[0]} path/to/dataset.csv")
+        sys.exit(1)
 
+    dataset_path = sys.argv[1]
+
+    if not os.path.exists(dataset_path):
+        print(f"Error: File '{dataset_path}' does not exist.")
+        sys.exit(1)
+
+    # Load dataset
+    df = pd.read_csv(dataset_path)
+    if not all(col in df.columns for col in ["feature1", "feature2", "label"]):
+        print("Error: CSV must contain 'feature1', 'feature2', and 'label' columns.")
+        sys.exit(1)
+
+    X = df[["feature1", "feature2"]].values
+    y = df["label"].values
+
+    # Train the QDA model
+    qda = QDA()
+    qda.fit(X, y)
+
+    # Plot
+    plot_decision_boundary(qda, X, y, "QDA Decision Boundary")
+
+if __name__ == "__main__":
+    main()
