@@ -44,6 +44,7 @@ def main():
         print(f"Error: File '{dataset_path}' does not exist.")
         sys.exit(1)
 
+
     # Load dataset
     df = pd.read_csv(dataset_path)
     if not all(col in df.columns for col in ["feature1", "feature2", "label"]):

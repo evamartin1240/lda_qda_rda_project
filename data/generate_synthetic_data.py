@@ -29,7 +29,7 @@ def generate_complex_dataset(n_samples_per_class=50, random_state=None, noise=0.
     X0 = np.random.multivariate_normal(mean=[0, 0], cov=[[3, 0], [0, 1]], size=n_samples_per_class)
     y0 = np.zeros(n_samples_per_class)
 
-    X1 = np.random.multivariate_normal(mean=[4, 4], cov=[[1, 0], [0, 3]], size=n_samples_per_class)
+    X1 = np.random.multivariate_normal(mean=[2, 2], cov=[[1, 0], [0, 3]], size=n_samples_per_class)
     y1 = np.ones(n_samples_per_class)
 
     X = np.vstack((X0, X1))
