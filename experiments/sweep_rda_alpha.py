@@ -39,7 +39,7 @@ def main():
     if not os.path.exists(dataset_path):
         print(f"Error: File '{dataset_path}' does not exist.")
         sys.exit(1)
-
+    case = os.path.basename(dataset_path).split(".")[0]
     # Load dataset
     df = pd.read_csv(dataset_path)
     if not all(col in df.columns for col in ["feature1", "feature2", "label"]):
@@ -66,7 +66,8 @@ def main():
         plot_decision_boundary(model, X, y, f"RDA (alpha={alpha:.1f})")
 
     plt.tight_layout()
-    plt.show()
+    os.makedirs("results/plots", exist_ok=True)
+    fig.savefig(f"results/plots/sweeprda_{case}.png", dpi=300, bbox_inches="tight")
 
 if __name__ == "__main__":
     main()
